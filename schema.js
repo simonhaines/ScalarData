@@ -13,7 +13,7 @@ class Integer {
 
 Integer.prototype[Symbol.toStringTag] = "Schema/Integer";
 
-let registry = [];
+let schemaRegistry = new Array();
 class Schema extends Array {
   get [Symbol.species]() {
     return this;  // Allows Array.map() to return a Schema object
@@ -30,7 +30,7 @@ class Schema extends Array {
     if (!(json instanceof Array)) throw new Error("Bad JSON");
 
     // Map string tags to types
-    var typeMap = registry.reduce(function(acc, val) {
+    var typeMap = schemaRegistry.reduce(function(acc, val) {
       acc[val.prototype[Symbol.toStringTag]] = val;
       return acc;
     }, new Map());
@@ -43,7 +43,7 @@ class Schema extends Array {
   }
 
   static register(domain) {
-    registry.push(domain);
+    schemaRegistry.push(domain);
   }
 }
 

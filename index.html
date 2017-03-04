@@ -1,7 +1,23 @@
 <html>
   <head>
+	<script type="text/javascript" src="d3.js"></script>
 	<script type="text/javascript" src="schema.js"></script>
+	<script type="text/javascript" src="view.js"></script>
   </head>
   <body>
+
+	<div id="workspace"></div>
+
+	<script type="text/javascript">
+	  // A schema of a single integer
+	  var s = Schema.fromJSON([['Schema/Integer', 'A number']]);
+
+	  // Render the schema
+	  var sv = new SchemaView(s);
+	  sv.render(d3.select('div#workspace').node());
+	  
+	</script>
+	
   </body>
 </html>
+ 
