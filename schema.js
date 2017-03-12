@@ -1,45 +1,52 @@
-class Integer {
-  constructor(label) {
-    this.label = label;
+class Scalar {
+  constructor(name, optional) {
+    this.name = name;
+	this.optional = optional;
   }
 
   parse(json) {
   }
 
   toJSON() {
-    return [this.label];
+    return [this.name, this.optional];
   }
 }
 
-Integer.prototype[Symbol.toStringTag] = "Schema/Integer";
+Scalar.prototype[Symbol.toStringTag] = "Schema/Number";
 
 let schemaRegistry = new Array();
-class Schema extends Array {
-  get [Symbol.species]() {
-    return this;  // Allows Array.map() to return a Schema object
-  }
+class Schema {
 
-  toJSON() {
-    return this.reduce(function(acc, val) {
-      acc.push([val[Symbol.toStringTag]].concat(val.toJSON()));
-      return acc;
-    }, new Array());
-  }
-
-  static fromJSON(json) {
-    if (!(json instanceof Array)) throw new Error("Bad JSON");
+  constructor(model) {
+    if (!(model instanceof Array)) throw new Error("Bad model");
 
     // Map string tags to types
     var typeMap = schemaRegistry.reduce(function(acc, val) {
       acc[val.prototype[Symbol.toStringTag]] = val;
       return acc;
     }, new Map());
-    var result = new Schema();
-    json.forEach(function(item) {
+
+	// ['schema name', ['tag', ...], [[schemaType, ...], ...]]]
+	this.name = model[0];
+	this.tags = model[1];
+	this.items = model[2].map(function(item) {
       if (!typeMap[item[0]]) throw new Error("Unknown type: " + item[0]);
-      result.push(new typeMap[item[0]](...item.slice(1)));
-    });
-    return result;
+      return new typeMap[item[0]](...item.slice(1));
+	});
+  }
+
+  map(func) {
+	return this.items.map(func);
+  }
+  
+  toJSON() {
+	var json = new Array();
+	json.push(this.name);
+	json.push(this.tags);
+	json.push(this.items.map(function(item) {
+	  return [item[Symbol.toStringTag]].concat(item.toJSON());
+	}));
+	return json;
   }
 
   static register(domain) {
@@ -47,4 +54,4 @@ class Schema extends Array {
   }
 }
 
-Schema.register(Integer);
+Schema.register(Scalar);
