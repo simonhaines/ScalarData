@@ -1,184 +1,39 @@
 <html>
   <head>
+	<link rel="stylesheet" href="spectre.css"/>
 	<style type="text/css">
 	  body {
-	  background: #f2f2f2;
-	  box-sizing: border-box;
-	  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
-	  font-weight: 300;
+		background: #f2f2f2;
 	  }
-
-	  #sidebar {
-	  float:left;
-	  width: 250px;
-	  }
-
-	  #workspace {
-	  margin-left: 250px;
-
-	  border-left: solid black 1px;
-	  }
-
-	  .panel {
-	  margin: 20px;
-	  padding: 10px;
-	  background: white;
-	  box-shadow: 0px 1px 6px rgba(0, 0, 0, 0.2);
-	  }
-
-	  .panel .toolbar {
-	  float: right;
-	  display: none;
-	  position: relative;
-	  }
-
-	  .toolbar * {
-	  margin: 0px 3px;
-	  }
-
-	  .panel:hover .toolbar {
-	  display: inline-block;
-	  }
-
-	  button, select, input {
-	  border:none;
-	  border-radius: 2px;
-	  position: relative;
-	  /* font-size: 14px; */
-	  font-size: inherit;
-	  font-weight: 500;
-	  letter-spacing: 0;
-	  white-space: nowrap;
-	  vertical-align: middle;
-	  }
-	  
-
-	  button {
-	  padding: 8px 30px;
-	  cursor: pointer;
-	  text-transform: uppercase;
-	  }
-
-	  button.small {
-	  padding: 5px 20px;
-	  font-size: 12px;
-	  }
-
-	  select {
-	    padding: 8px 30px;
-	  }
-	  
-	  input {
-	  outline: none;
-	  border-bottom: solid 1px #D2D2D2;
-	  padding: 8px 0px;
-	  margin: 10px 0px;
-	  }
-
-	  input:focus {
-	    border-bottom: solid 1px #828282;
-	  }
-
-	  input.name-editor {
-	  font-size: 30px;
-	  font-weight: normal;
-	  }
-	  
-	  .panel h1 {
-	  margin-top: 10px;
-	  font-size: 30px;
-	  font-weight: normal;
-	  }
-
-	  .panel .tags {
-	  margin-top: 15px;
-	  margin-bottom: 5px;
-	  }
-
-	  .panel .tag {
-	  background-color: #E1ECF4;
-	  padding: .5em .8em;
-	  font-size: 75%;
-	  line-height: 1;
-	  color: #39739D;
-	  display: inline;
-	  text-align: center;
-	  white-space: nowrap;
-	  vertical-align: baseline;
-	  }
-
-	  /* Attribute editors */
-	  div.attribute {
-	  margin: 10px 0px;
-	  padding: 5px 0px;
-	  border-top: solid 1px black;
-	  }
-	  .attribute-name {
-	  display: inline-block;
-	  width: 250px;
-	  margin: 0px;
-	  vertical-align: top;
-	  }
-	  .attribute-value {
-	  display: inline-block;
-	  }
-
-	  input[type=checkbox] {
-	  display: inline-block;
-	  margin: 10px 0px;
-	  width: 1.2em;
-	  height: 1.2em;
-	  margin-right: 10px;
-	  }
-
-	  .attribute-ctrl * {
-	    margin-right: 3px;
-	  }
-	  
-	  .attribute-name input[type=text] {
-	  font-size: 120%;
-	  }
-
 	</style>
 	<script type="text/javascript" src="d3.js"></script>
 	<script type="text/javascript" src="schema.js"></script>
 	<script type="text/javascript" src="view.js"></script>
   </head>
   <body>
-
-	<div id="sidebar">
-	  <h1 style="font-family: monospace">ScalarData</h1>
-	  <p>Version 1</p>
-	</div>
-	<div id="workspace">
-	  <div class="panel">
-		<div class="toolbar">
-		  <span class="toolbar-item">Edit</span><span class="toolbar-item">Close</span>
+	<div class="container">
+	  <div class="columns">
+		<div id="sidebar" class="column col-2">
+		  <h1>ScalarData</h1>
+		  <p>Version 1</p>
 		</div>
-		<h1 style="font-family: 'Helvetica','Courier'">Panel title</h1>
-		Panel content
-
-		<div class="tags">
-		  <span class="tag">Tagged</span>
-		  <span class="tag">Tag 2</span>
-		  <span class="tag">Another tag</span>
-		</div>
-	  </div>
-
-
-
-	  <div class="panel">
-		<div class="toolbar">
-		  <span class="toolbar-item">Edit</span><span class="toolbar-item">Close</span>
-		</div>
-		<h1 style="font-family: 'Helvetica','Courier'">Panel title</h1>
-		Panel content
-
-		<div class="tags">
-		  <span class="tag">Tagged</span>
-		  <span class="tag">Tag 2</span>
-		  <span class="tag">Another tag</span>
-		</div>
+		<div id="workspace" class="column col-10">
+		  
+		  <div class="card shadow-0">
+			<div class="card-header">
+			  <div class="card-tools float-right">
+				<a href="#" class="btn btn-link">Edit</a>
+				<a href="#" class="btn btn-primary">Close</a>
+			  </div>
+			  <div class="card-title">Card title</div>
+			</div>
+			<div class="card-body">Card content</div>
+			<div class="card-footer">
+			  <label class="chip">TagOne</label>
+			  <label class="chip">TagTwo</label>
+			</div>
+		  </div>
+		  
 	  </div>
 	</div>
 
@@ -188,7 +43,7 @@
 
 	  // Render the schema
 	  var sv = new SchemaView(s);
-	  sv.render(document.getElementById('workspace'));
+	  //sv.render(document.getElementById('workspace'));
 	  
 	</script>
 
