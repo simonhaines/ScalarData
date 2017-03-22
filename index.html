@@ -13,27 +13,11 @@
   <body>
 	<div class="container">
 	  <div class="columns">
-		<div id="sidebar" class="column col-2">
+		<div id="sidebar" class="col-2">
 		  <h1>ScalarData</h1>
 		  <p>Version 1</p>
 		</div>
-		<div id="workspace" class="column col-10">
-		  
-		  <div class="card shadow-0">
-			<div class="card-header">
-			  <div class="card-tools float-right">
-				<a href="#" class="btn btn-link">Edit</a>
-				<a href="#" class="btn btn-primary">Close</a>
-			  </div>
-			  <div class="card-title">Card title</div>
-			</div>
-			<div class="card-body">Card content</div>
-			<div class="card-footer">
-			  <label class="chip">TagOne</label>
-			  <label class="chip">TagTwo</label>
-			</div>
-		  </div>
-		  
+		<div id="workspace" class="col-10">
 	  </div>
 	</div>
 
@@ -43,7 +27,7 @@
 
 	  // Render the schema
 	  var sv = new SchemaView(s);
-	  //sv.render(document.getElementById('workspace'));
+	  sv.render(document.getElementById('workspace'));
 	  
 	</script>
 
