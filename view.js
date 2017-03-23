@@ -68,7 +68,8 @@ let viewRegistry = new Map();
 class SchemaView {
   constructor(schema) {
 	this.schema = schema;
-	this.name = this.schema.name;
+	  this.name = this.schema.name;
+	  this.tags = this.tagsToString(this.schema.tags);
 
 	// Load all editor widgets from the registry
 	this.widgets = schema.map((s) => {
@@ -125,12 +126,21 @@ class SchemaView {
  	      <a href="#" class="btn btn-link" title="save">Save</a>
 	      <a href="#" class="btn btn-primary" title="close">Close</a>
 	    </div>
-	    <form class="col-5 form-horizontal">
-	    <input class="form-input" type="text" title="name"
-   	      placeholder="Name" value="${this.name}"/>
+		<div class="input-group col-5">
+		  <span class="input-group-addon">Title</span>
+	      <input class="form-input" type="text" title="name"
+   	        placeholder="Name" value="${this.name}"/>
+		</div>
 	  </div>
 	  <div class="card-body"></div>
-	  <div class="card-footer"></div>`;
+      <div class="card-footer">
+	    <div class="input-group col-5">
+		  <span class="input-group-addon">Tags</span>
+		  <input class="form-input" type="text" title="tags"
+            placeholder="Tags" value="${this.tags}"/>
+		  </div>
+		  <i>Separate tags with spaces</i>
+	  </div>`;
 
 	  
 	let ctx = this;
@@ -141,14 +151,16 @@ class SchemaView {
 	el.select('[title=name]').on('change', function() {
 	  ctx.name = this.value;
 	});
+	  el.select('[title=tags]').on('change', function() {
+		  ctx.tags = this.value;
+	  });
 
 	// Widgets
 	var widgets = el.select('.card-body')
 		.append('div').attr('class', 'widgets');
 	this.renderWidgets(widgets);
 	  
-
-	  // Control for adding a new attribute
+	// Control for adding a new attribute
 	let editors = [];
 	  viewRegistry.forEach((v) => editors.push(v));
 	  el.select('.card-body').append('form')
@@ -189,7 +201,8 @@ class SchemaView {
   }
 
   commit() {
-	this.schema.name = this.name;
+	  this.schema.name = this.name;
+	  this.schema.tags = this.stringToTags(this.tags);
 	this.widgets.forEach((w) => w.commit());
 	this.renderViewer();
   }
@@ -203,6 +216,21 @@ class SchemaView {
   remove(item) {
 	alert('Remove: ' + item.name);
   }
+
+	stringToTags(str) {
+		let r = new RegExp(/\[([^\]]+)\]|([\w]+)/g);
+		let t = [];
+		do {
+			var match = r.exec(str);
+			if (match) t.push(match[1] || match[0]);
+		} while (match);
+		return t;
+	}
+
+	tagsToString(tags) {
+		return tags.map((t) => t.includes(' ') ? '[' + t + ']' : t)
+			.join(' ');
+	}
 
   static register(domain, editor) {
 	if (domain.prototype[Symbol.toStringTag] == undefined) {
