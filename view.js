@@ -36,13 +36,12 @@ class ScalarEditor {
 	      </div>
 	    </form>`;
 
-	let ctx = this;
 	this.el.querySelector('#input-name')
-	  .addEventListener('change', function() { ctx.name = this.value; });
+	  .addEventListener('change', (e) => this.name = e.target.value);
 	this.el.querySelector('#input-optional')
-	  .addEventListener('change', function() { ctx.optional = this.checked; });
+	  .addEventListener('change', (e) => this.optional = e.target.checked);
 	this.el.querySelector('[data-action=remove]')
-	  .addEventListener('click', function(e) { schema.remove(ctx); });
+	  .addEventListener('click', (e) => schema.remove(this));
   }
   commit() {
 	this.model.name = this.name;
@@ -96,16 +95,14 @@ class LocationEditor {
 	      </div>
 	    </form>`;
 
-	let ctx = this;
 	this.el.querySelector('#input-name')
-	  .addEventListener('change', function() { ctx.name = this.value; });
+	  .addEventListener('change', (e) => this.name = e.target.value);
 	let orderSelection = this.el.querySelector('#input-order');
-	orderSelection.addEventListener('change', function() {
-	  ctx.order = parseInt(this.value);
-	});
+	orderSelection.addEventListener('change',
+	  (e) => this.order = parseInt(e.target.value));
 	orderSelection.children[this.order].selected = true;
 	this.el.querySelector('[data-action=remove]')
-	  .addEventListener('click', function(e) { schema.remove(ctx); });
+	  .addEventListener('click', (e) => schema.remove(this));
   }
   commit() {
 	this.model.name = this.name;
@@ -135,6 +132,10 @@ class SchemaView {
 		return new (viewRegistry.get(s[Symbol.toStringTag]))(s);
 	  }
 	});
+
+	// Listen out for schema changes
+	this.schema.on('add', this.renderWidgets.bind(this));
+	this.schema.on('remove', this.renderWidgets.bind(this));
   }
 
   render(el) {
@@ -150,25 +151,40 @@ class SchemaView {
   renderViewer() {
 	this.el.innerHTML =
 	  `<div class="card-header">
-	    <div class="btn-group btn-group-block float-right">
+        <div class="btn-group btn-group-block float-right">
  	      <button class="btn" title="edit">Edit</button>
 	      <button class="btn" title="close">Close</buton>
 	    </div>
 	    <div class="card-title">${this.name}</div>
 	  </div>
-	  <div class="card-body"></div>
+	  <div class="card-body">
+        <div id="dropzone" class="col-12 dropzone">
+          <div>Drop a file here</div>
+        </div>
+      </div>
 	  <div class="card-footer"></div>`;
-	
-	let ctx = this;
-	let el = d3.select(this.el);
+	  
+	// Menu
+	this.el.querySelector('[title=edit]')
+	  .addEventListener('click', (e) => this.renderEditor());
+	this.el.querySelector('[title=close]')
+	  .addEventListener('click', (e) => this.close());
 
-	el.select('[title=edit]').on('click', this.renderEditor.bind(this));
-	// TODO 'close'
+	// Drop zone
+	let dz = this.el.querySelector('#dropzone');
+	dz.addEventListener('dragover', (e) => {
+	  e.stopPropagation();
+	  e.preventDefault();
+	  e.dataTransfer.dropEffect= 'copy';
+	});
+	dz.addEventListener('drop', (e) => {
+	  e.stopPropagation();
+	  e.preventDefault();
+	  alert('dropped!');
+	});
 
-	// TODO create a drag/drop element
-	el.select('.card-body').text('DROP ZONE');
-
-	el.select('.card-footer')
+	d3.select(this.el)
+	  .select('.card-footer')
 	  .selectAll('.chip')
 	  .data(this.schema.tags)
 	  .enter()
@@ -182,60 +198,50 @@ class SchemaView {
  	      <button class="btn" title="save">Save</button>
 	      <button class="btn" title="close">Close</buton>
 	    </div>
-		<div class="input-group col-5">
+	    <div class="input-group col-5">
 		  <span class="input-group-addon">Title</span>
 	      <input class="form-input" type="text" title="name"
    	        placeholder="Name" value="${this.name}"/>
 		</div>
 	  </div>
-	  <div class="card-body"></div>
+	  <div class="card-body">
+        <div id="widgets" class="width-medium"></div>
+        <form class="form-horizontal col-12 width-medium">
+          <div class="form-group"> 
+            <label class="form-label col-3">New attribute</label>
+            <select id="attribute-type" class="form-select col-6"></select>
+            <button id="attribute-add" class="btn btn-link">Add</button>
+          </div>
+        </form>
+        <div class="divider"></div>
+      </div>
       <div class="card-footer">
 	    <div class="input-group col-5">
-		  <span class="input-group-addon">Tags</span>
-		  <input class="form-input" type="text" title="tags"
-            placeholder="Tags" value="${this.tags}"/>
-		  </div>
-		  <i>Separate tags with spaces</i>
+	      <span class="input-group-addon">Tags</span>
+		    <input class="form-input" type="text" title="tags"
+              placeholder="Tags" value="${this.tags}"/>
+	    </div>
+	    <i>Separate tags with spaces</i>
 	  </div>`;
 
-	  
-	let ctx = this;
-	let el = d3.select(this.el);
-
-	el.select('[title=save]').on('click', this.commit.bind(this));
-	el.select('[title=close]').on('click', this.rollback.bind(this));
-	el.select('[title=name]').on('change', function() {
-	  ctx.name = this.value;
-	});
-	  el.select('[title=tags]').on('change', function() {
-		  ctx.tags = this.value;
+	this.el.querySelector('[title=save]')
+	  .addEventListener('click', (e) => this.commit());
+	this.el.querySelector('[title=close]')
+	  .addEventListener('click', (e) => this.rollback());
+	this.el.querySelector('[title=name]')
+	  .addEventListener('change', (e) => this.name = e.target.value);
+	this.el.querySelector('[title=tags]')
+	  .addEventListener('change', (e) => this.tags = e.target.value);
+	this.el.querySelector('#attribute-add')
+	  .addEventListener('click', (e) => {
+		e.preventDefault();
+		this.add(this.editorEl.querySelector('#attribute-type').value);
 	  });
 
-	// Widgets
-	var widgets = el.select('.card-body')
-		.append('div').attr('class', 'widgets');
-	this.renderWidgets(widgets);
-	  
-	// Control for adding a new attribute
+	// Attribute types
 	let editors = [];
 	viewRegistry.forEach((v) => editors.push(v));
-	el.select('.card-body')
-	  .append(function() {
-		let el = document.createElement('form');
-		el.className = 'form-horizontal col-5';
-		el.innerHTML =
-		  `<div class="form-group">
-            <label class="form-label col-3">New attribute</label>
-              <select id="attribute-type" class="form-select col-6"></select>
-              <button id="attribute-add" class="btn btn-link">Add</button>
-          </div>`;
-		el.querySelector('#attribute-add')
-		  .addEventListener('click', function(e) {
-			e.preventDefault();
-			alert('add!');
-		  });
-		return el;
-	  })
+	d3.select(this.el)
 	  .select('#attribute-type')
 	  .selectAll('option')
 	  .data(editors)
@@ -243,27 +249,33 @@ class SchemaView {
 	  .append('option')
 	  .attr('value', (d,i) => i)
 	  .text((d) => d.description);
+
+	this.renderWidgets();
   }
 
   renderWidgets(widgets) {
 	let ctx = this;
-	widgets
+	d3.select(this.el)
+	  .select('#widgets')
 	  .selectAll('div.widget')
 	  .data(this.widgets)
 	  .enter()
 	  .append((d, i) => {
 		let el = document.createElement('div');
-		el.className = 'widget col-5';
+		el.className = 'widget col-12';
 		d.render(el, ctx);
 		return el;
-	  });
+	  })
+	  .exit()
+	  .remove();
+  }
 
-	widgets.append('div').attr('class', 'divider');
+  add(idx) {
   }
 
   commit() {
-	  this.schema.name = this.name;
-	  this.schema.tags = this.stringToTags(this.tags);
+	this.schema.name = this.name;
+	this.schema.tags = this.stringToTags(this.tags);
 	this.widgets.forEach((w) => w.commit());
 	this.renderViewer();
   }
@@ -278,20 +290,24 @@ class SchemaView {
 	alert('Remove: ' + item.name);
   }
 
-	stringToTags(str) {
-		let r = new RegExp(/\[([^\]]+)\]|([\w]+)/g);
-		let t = [];
-		do {
-			var match = r.exec(str);
-			if (match) t.push(match[1] || match[0]);
-		} while (match);
-		return t;
-	}
+  close() {
+	alert('Close!');
+  }
+  
+  stringToTags(str) {
+	let r = new RegExp(/\[([^\]]+)\]|([\w]+)/g);
+	let t = [];
+	do {
+	  var match = r.exec(str);
+	  if (match) t.push(match[1] || match[0]);
+	} while (match);
+	return t;
+  }
 
-	tagsToString(tags) {
-		return tags.map((t) => t.includes(' ') ? '[' + t + ']' : t)
-			.join(' ');
-	}
+  tagsToString(tags) {
+	return tags.map((t) => t.includes(' ') ? '[' + t + ']' : t)
+	  .join(' ');
+  }
 
   static register(domain, editor) {
 	if (domain.prototype[Symbol.toStringTag] == undefined) {

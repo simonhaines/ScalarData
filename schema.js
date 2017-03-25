@@ -48,6 +48,9 @@ class Schema {
       if (!typeMap[item[0]]) throw new Error("Unknown type: " + item[0]);
       return new typeMap[item[0]](...item.slice(1));
 	});
+
+	// Event dispatch
+	this.events = new Map();
   }
 
   map(func) {
@@ -62,6 +65,21 @@ class Schema {
 	  return [item[Symbol.toStringTag]].concat(item.toJSON());
 	}));
 	return json;
+  }
+
+  on(event, callback) {
+	if (!this.events.has(event)) {
+	  this.events.set(event, new Array());
+	}
+	this.events.get(event).push(callback);
+  }
+
+  add(item) {
+	this.items.push(item);
+	if (this.events.has('add')) {
+	  let e = { item: item, idx: this.items.length };
+	  this.events.get('add').forEach((c) => c(e));
+	}
   }
 
   static register(domain) {
