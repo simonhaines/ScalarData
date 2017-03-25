@@ -14,6 +14,21 @@ class Scalar {
 
 Scalar.prototype[Symbol.toStringTag] = "Schema/Number";
 
+class Location {
+  constructor(name, order) {
+	this.name = name;
+	this.order = order;
+  }
+
+  parse(json) {
+  }
+
+  toJSON() {
+	return [this.name, this.order];
+  }
+}
+Location.prototype[Symbol.toStringTag] = "Schema/Location";
+
 let schemaRegistry = new Array();
 class Schema {
 
@@ -55,3 +70,4 @@ class Schema {
 }
 
 Schema.register(Scalar);
+Schema.register(Location);

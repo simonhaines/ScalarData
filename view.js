@@ -13,45 +13,36 @@ class ScalarEditor {
 	this.el = el;
 	this.el.innerHTML =
 	  `<h3>Any number, e.g. -12.34 or 567</h3>
-	  <form class="form-horizontal">
-	    <div class="form-group">
-	      <div class="col-3">
-	        <label class="form-label" for="input-name">Name</label>
+         <button class="btn btn-link" data-action="remove">Remove this</button>
+         <form class="form-horizontal">
+	      <div class="form-group">
+	        <div class="col-3">
+	          <label class="form-label" for="input-name">Name</label>
+	        </div>
+	        <div class="col-9">
+	          <input id="input-name" class="form-input" type="text"
+	            placeholder="Name" value="${this.name}"/>
+	        </div>
 	      </div>
-	      <div class="col-9">
-	        <input id="input-name" class="form-input" type="text"
-	          placeholder="Name" value="${this.name}"/>
+ 	      <div class="form-group">
+	        <div class="col-3"></div>
+	        <div class="col-9">
+	          <label class="form-checkbox">
+	            <input id="input-optional" type="checkbox"
+ 	              ${this.optional ? "checked" : null}/>
+	            <i class="form-icon"></i>May be absent (becomes 0)
+	          </label>
+	        </div>
 	      </div>
-	    </div>
- 	    <div class="form-group">
-	      <div class="col-3"></div>
-	      <div class="col-9">
-	        <label class="form-checkbox">
-	          <input id="input-optional" type="checkbox"
- 	${this.optional ? "checked" : null}/>
-	          <i class="form-icon"></i>May be absent (becomes 0)
-	        </label>
-	      </div>
-	  </div>
-	  <div class="form-group">
-	    <div class="col-3"></div>
- 	    <div class="col-9">
-	      <button class="btn" data-action="remove">Remove this</button>
-      </div>
-	  </div>
-	  </form>`;
+	    </form>`;
 
 	let ctx = this;
-	d3.select(el).select("#input-name").on('change', function() {
-	  ctx.name = this.value; });
-	d3.select(el).select("#input-optional").on('change', function() {
-	  ctx.optional = this.checked;
-	});
-	d3.select(el).select("[data-action=remove]")
-	  .on('click', function() {
-		d3.event.preventDefault();
-		schema.remove(ctx);
-	  });
+	this.el.querySelector('#input-name')
+	  .addEventListener('change', function() { ctx.name = this.value; });
+	this.el.querySelector('#input-optional')
+	  .addEventListener('change', function() { ctx.optional = this.checked; });
+	this.el.querySelector('[data-action=remove]')
+	  .addEventListener('click', function(e) { schema.remove(ctx); });
   }
   commit() {
 	this.model.name = this.name;
@@ -61,8 +52,73 @@ class ScalarEditor {
 	this.name = this.model.name;
 	this.optional = this.model.optional;
   }
+  static get description() {
+	return "A number";
+  }
 }
-ScalarEditor.prototype.description = "A number";
+
+class LocationEditor {
+  constructor(model) {
+	if (model == null) {
+	  // We are constructing a new location
+	  this.model = new Location('A location', 0);
+	} else {
+	  this.model = model;
+	}
+	this.name = model.name;
+	this.order = model.order;
+  }
+  render(el, schema) {
+	this.el = el;
+	this.el.innerHTML =
+	  `<h3>A geographic location (WGS84)</h3>
+         <button class="btn btn-link" data-action="remove">Remove this</button>
+         <form class="form-horizontal">
+	      <div class="form-group">
+	        <div class="col-3">
+	          <label class="form-label" for="input-name">Name</label>
+	        </div>
+	        <div class="col-9">
+	          <input id="input-name" class="form-input" type="text"
+	            placeholder="Name" value="${this.name}"/>
+	        </div>
+	      </div>
+ 	      <div class="form-group">
+	        <div class="col-3">
+              <label class="form-label" for="input-order">Order</label>
+            </div>
+	        <div class="col-9">
+              <select id="input-order" class="form-select">
+                <option value="0">Longitude,Latitude</option>
+                <option value="1">Latitude,Longitude</option>
+              </select>
+	        </div>
+	      </div>
+	    </form>`;
+
+	let ctx = this;
+	this.el.querySelector('#input-name')
+	  .addEventListener('change', function() { ctx.name = this.value; });
+	let orderSelection = this.el.querySelector('#input-order');
+	orderSelection.addEventListener('change', function() {
+	  ctx.order = parseInt(this.value);
+	});
+	orderSelection.children[this.order].selected = true;
+	this.el.querySelector('[data-action=remove]')
+	  .addEventListener('click', function(e) { schema.remove(ctx); });
+  }
+  commit() {
+	this.model.name = this.name;
+	this.model.order = this.order;
+  }
+  rollback() {
+	this.name = this.model.name;
+	this.order = this.model.order;
+  }
+  static get description() {
+	return "A geographic location";
+  }
+}
 
 let viewRegistry = new Map();
 class SchemaView {
@@ -94,9 +150,9 @@ class SchemaView {
   renderViewer() {
 	this.el.innerHTML =
 	  `<div class="card-header">
-	    <div class="card-tools float-right">
- 	      <a href="#" class="btn btn-link" title="edit">Edit</a>
-	      <a href="#" class="btn btn-primary" title="close">Close</a>
+	    <div class="btn-group btn-group-block float-right">
+ 	      <button class="btn" title="edit">Edit</button>
+	      <button class="btn" title="close">Close</buton>
 	    </div>
 	    <div class="card-title">${this.name}</div>
 	  </div>
@@ -122,9 +178,9 @@ class SchemaView {
   renderEditor() {
 	this.el.innerHTML =
   	  `<div class="card-header">
-	    <div class="card-tools float-right">
- 	      <a href="#" class="btn btn-link" title="save">Save</a>
-	      <a href="#" class="btn btn-primary" title="close">Close</a>
+	    <div class="btn-group btn-group-block float-right">
+ 	      <button class="btn" title="save">Save</button>
+	      <button class="btn" title="close">Close</buton>
 	    </div>
 		<div class="input-group col-5">
 		  <span class="input-group-addon">Title</span>
@@ -162,26 +218,31 @@ class SchemaView {
 	  
 	// Control for adding a new attribute
 	let editors = [];
-	  viewRegistry.forEach((v) => editors.push(v));
-	  el.select('.card-body').append('form')
-		  .attr('class', 'form-horizontal col-5')
-		  .html(`<div class="form-group">
-		  <div class="col-3">
-		  <label class="form-label" for="attribute-add">Add attribute</label>
-		  </div>
-		  <div class="col-9">
-		  <select id="attribute-add" class="form-select">
-		  </select>
-		  </div>
-				</div>`)
-		  .select('#attribute-add')
-		  .on('change', function() { alert('add!'); })
-	      .selectAll('option')
-		  .data(editors)
+	viewRegistry.forEach((v) => editors.push(v));
+	el.select('.card-body')
+	  .append(function() {
+		let el = document.createElement('form');
+		el.className = 'form-horizontal col-5';
+		el.innerHTML =
+		  `<div class="form-group">
+            <label class="form-label col-3">New attribute</label>
+              <select id="attribute-type" class="form-select col-6"></select>
+              <button id="attribute-add" class="btn btn-link">Add</button>
+          </div>`;
+		el.querySelector('#attribute-add')
+		  .addEventListener('click', function(e) {
+			e.preventDefault();
+			alert('add!');
+		  });
+		return el;
+	  })
+	  .select('#attribute-type')
+	  .selectAll('option')
+	  .data(editors)
 	  .enter()
 	  .append('option')
 	  .attr('value', (d,i) => i)
-		  .text((d) => d.prototype.description);
+	  .text((d) => d.description);
   }
 
   renderWidgets(widgets) {
@@ -241,3 +302,4 @@ class SchemaView {
 }
 
 SchemaView.register(Scalar, ScalarEditor);
+SchemaView.register(Location, LocationEditor);
