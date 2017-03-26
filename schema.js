@@ -10,6 +10,10 @@ class Scalar {
   toJSON() {
     return [this.name, this.optional];
   }
+
+  static create() {
+	return new Scalar('Number', true);
+  }
 }
 
 Scalar.prototype[Symbol.toStringTag] = "Schema/Number";
@@ -25,6 +29,10 @@ class Location {
 
   toJSON() {
 	return [this.name, this.order];
+  }
+
+  static create() {
+	return new Location('Location', 0);
   }
 }
 Location.prototype[Symbol.toStringTag] = "Schema/Location";
@@ -68,18 +76,31 @@ class Schema {
   }
 
   on(event, callback) {
-	if (!this.events.has(event)) {
-	  this.events.set(event, new Array());
-	}
-	this.events.get(event).push(callback);
+	this.events.set(event, callback);
   }
 
-  add(item) {
-	this.items.push(item);
-	if (this.events.has('add')) {
-	  let e = { item: item, idx: this.items.length };
-	  this.events.get('add').forEach((c) => c(e));
+  dispatch(event, ...args) {
+	for (var entry of this.events.entries()) {
+	  if (entry[0].split('.')[0] === event) {
+		entry[1](...args);
+	  }
 	}
+  }
+
+  add(type) {
+	var cons = schemaRegistry.find(
+	  (s) => s.prototype[Symbol.toStringTag] === type);
+	if (cons === undefined) throw new Error(`Bad type: ${type}`);
+	var item = cons.create();
+	this.items.push(item);
+	this.dispatch('add', item, this.items.length - 1);
+  }
+
+  remove(item) {
+	var idx = this.items.indexOf(item);
+	if (idx === -1) throw new Error('Schema does not contain item');
+	this.items.splice(idx, 1);
+	this.dispatch('remove', item, idx);
   }
 
   static register(domain) {

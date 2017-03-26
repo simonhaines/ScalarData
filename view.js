@@ -1,15 +1,11 @@
 class ScalarEditor {
-  constructor(model) {
-	if (model == null) {
-	  // We are constructing a new integer attribute
-	  this.model = new Scalar('A number', true);
-	} else {
-	  this.model = model;
-	}
+  constructor(model, schema) {
+	this.model = model;
+	this.schema = schema;
 	this.name = model.name;
 	this.optional = model.optional;
   }
-  render(el, schema) {
+  render(el) {
 	this.el = el;
 	this.el.innerHTML =
 	  `<h3>Any number, e.g. -12.34 or 567</h3>
@@ -41,7 +37,7 @@ class ScalarEditor {
 	this.el.querySelector('#input-optional')
 	  .addEventListener('change', (e) => this.optional = e.target.checked);
 	this.el.querySelector('[data-action=remove]')
-	  .addEventListener('click', (e) => schema.remove(this));
+	  .addEventListener('click', (e) => this.schema.remove(this));
   }
   commit() {
 	this.model.name = this.name;
@@ -57,17 +53,13 @@ class ScalarEditor {
 }
 
 class LocationEditor {
-  constructor(model) {
-	if (model == null) {
-	  // We are constructing a new location
-	  this.model = new Location('A location', 0);
-	} else {
-	  this.model = model;
-	}
+  constructor(model, schema) {
+	this.model = model;
+	this.schema = schema;
 	this.name = model.name;
 	this.order = model.order;
   }
-  render(el, schema) {
+  render(el) {
 	this.el = el;
 	this.el.innerHTML =
 	  `<h3>A geographic location (WGS84)</h3>
@@ -102,7 +94,7 @@ class LocationEditor {
 	  (e) => this.order = parseInt(e.target.value));
 	orderSelection.children[this.order].selected = true;
 	this.el.querySelector('[data-action=remove]')
-	  .addEventListener('click', (e) => schema.remove(this));
+	  .addEventListener('click', (e) => this.schema.remove(this));
   }
   commit() {
 	this.model.name = this.name;
@@ -129,13 +121,13 @@ class SchemaView {
 	  if (!viewRegistry.has(s[Symbol.toStringTag])) {
 		throw new Error("Unregistered editor: " + s.toString());
 	  } else {
-		return new (viewRegistry.get(s[Symbol.toStringTag]))(s);
+		return new (viewRegistry.get(s[Symbol.toStringTag]))(s, this);
 	  }
 	});
 
 	// Listen out for schema changes
-	this.schema.on('add', this.renderWidgets.bind(this));
-	this.schema.on('remove', this.renderWidgets.bind(this));
+	this.schema.on('add.view', this.onAdd.bind(this));
+	this.schema.on('remove.view', this.onRemove.bind(this));
   }
 
   render(el) {
@@ -235,42 +227,58 @@ class SchemaView {
 	this.el.querySelector('#attribute-add')
 	  .addEventListener('click', (e) => {
 		e.preventDefault();
-		this.add(this.editorEl.querySelector('#attribute-type').value);
+		this.add(this.el.querySelector('#attribute-type').value);
 	  });
 
 	// Attribute types
 	let editors = [];
-	viewRegistry.forEach((v) => editors.push(v));
+	viewRegistry.forEach((v,k) => editors.push([k,v]));
 	d3.select(this.el)
 	  .select('#attribute-type')
 	  .selectAll('option')
 	  .data(editors)
 	  .enter()
 	  .append('option')
-	  .attr('value', (d,i) => i)
-	  .text((d) => d.description);
+	  .attr('value', (d) => d[0])
+	  .text((d) => d[1].description);
 
 	this.renderWidgets();
   }
 
-  renderWidgets(widgets) {
-	let ctx = this;
-	d3.select(this.el)
-	  .select('#widgets')
-	  .selectAll('div.widget')
-	  .data(this.widgets)
-	  .enter()
+  renderWidgets() {
+	let widgets = d3.select(this.el.querySelector('#widgets'))
+	  .selectAll('.widget')
+		.data(this.widgets, (d) => d);
+	widgets.enter()
 	  .append((d, i) => {
 		let el = document.createElement('div');
 		el.className = 'widget col-12';
-		d.render(el, ctx);
 		return el;
 	  })
-	  .exit()
+	  .merge(widgets)
+	  .each(function(d) { d.render(this); });
+	widgets.exit()
 	  .remove();
   }
 
-  add(idx) {
+  onAdd(item, idx) {
+	var w = viewRegistry.get(item[Symbol.toStringTag]);
+	this.widgets.splice(idx, 0, new w(item, this));
+	this.renderWidgets();
+  }
+
+  onRemove(item, idx) {
+	if (this.widgets[idx].model !== item) throw new Error('Mismatch!');
+	this.widgets.splice(idx, 1);
+	this.renderWidgets();
+  }
+
+  add(type) {
+	this.schema.add(type);
+  }
+
+  remove(view) {
+	this.schema.remove(view.model);
   }
 
   commit() {
@@ -284,10 +292,6 @@ class SchemaView {
 	this.name = this.schema.name;
 	this.widgets.forEach((w) => w.rollback());
 	this.renderViewer();
-  }
-
-  remove(item) {
-	alert('Remove: ' + item.name);
   }
 
   close() {
