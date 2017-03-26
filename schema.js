@@ -1,5 +1,11 @@
+var idCounter = 0;
+function newId() {
+  return `s${idCounter++}`;
+}
+
 class Scalar {
-  constructor(name, optional) {
+  constructor(id, name, optional) {
+	this.id = id;
     this.name = name;
 	this.optional = optional;
   }
@@ -8,18 +14,19 @@ class Scalar {
   }
 
   toJSON() {
-    return [this.name, this.optional];
+    return [this.id, this.name, this.optional];
   }
 
   static create() {
-	return new Scalar('Number', true);
+	return new Scalar(newId(), 'Number', true);
   }
 }
 
 Scalar.prototype[Symbol.toStringTag] = "Schema/Number";
 
 class Location {
-  constructor(name, order) {
+  constructor(id, name, order) {
+	this.id = id;
 	this.name = name;
 	this.order = order;
   }
@@ -28,11 +35,11 @@ class Location {
   }
 
   toJSON() {
-	return [this.name, this.order];
+	return [this.id, this.name, this.order];
   }
 
   static create() {
-	return new Location('Location', 0);
+	return new Location(newId(), 'Location', 0);
   }
 }
 Location.prototype[Symbol.toStringTag] = "Schema/Location";

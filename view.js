@@ -248,15 +248,16 @@ class SchemaView {
   renderWidgets() {
 	let widgets = d3.select(this.el.querySelector('#widgets'))
 	  .selectAll('.widget')
-		.data(this.widgets, (d) => d);
+		.data(this.widgets, (d) => d.model.id);
 	widgets.enter()
 	  .append((d, i) => {
 		let el = document.createElement('div');
 		el.className = 'widget col-12';
+		d.render(el);
 		return el;
-	  })
-	  .merge(widgets)
-	  .each(function(d) { d.render(this); });
+	  });
+//	  .merge(widgets)
+//	  .each(function(d) { d.render(this); });
 	widgets.exit()
 	  .remove();
   }
