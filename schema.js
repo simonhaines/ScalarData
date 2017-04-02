@@ -74,6 +74,7 @@ class Schema {
   
   toJSON() {
 	var json = new Array();
+	json.push(this.id);
 	json.push(this.name);
 	json.push(this.tags);
 	json.push(this.items.map(function(item) {

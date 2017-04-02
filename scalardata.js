@@ -10,7 +10,7 @@ class Id {
 	_id = value;
   }
 
-  static toJson() {
+  static toJSON() {
 	return _id;
   }
 }
@@ -38,6 +38,14 @@ sd = {
 	this.workspace = new Workspace(document.getElementById('workspace'));
 	this.schemasView = new SchemasView(this.schemas, this.workspace);
 	this.schemasView.render(document.getElementById('schemas'));
+  },
+
+  export: function() {
+	var json = new Array();
+	json.push(Id.toJSON());
+	json.push(this.schemas.toJSON());
+
+	console.log(JSON.stringify(json));
   }
 }
 

@@ -37,4 +37,11 @@ class Schemas {
   map(callback, thisArg) {
 	return this.schemas.map(callback, thisArg);
   }
+
+  toJSON() {
+	var json = new Array();
+	json.push(this.id);
+	json.push(this.schemas.map((s) => s.toJSON()));
+	return json;
+  }
 }
