@@ -23,9 +23,13 @@
 	  }
 	</style>
 	<script type="text/javascript">
-	  window.data = [20, [[1, 'First schema', ['genesis'], [['Schema/Number', 10, 'First number', true],['Schema/Location', 11, 'Place', 0]]]]];
+	  window.data = [20, [2, [[1, 'First schema', ['genesis'], [['Schema/Number', 10, 'First number', true],['Schema/Location', 11, 'Place', 0]]]]]];
 	</script>
 	<script type="text/javascript" src="d3.js"></script>
+	<script type="text/javascript" src="event.js"></script>
+	<script type="text/javascript" src="workspace.js"></script>
+	<script type="text/javascript" src="schemas.js"></script>
+	<script type="text/javascript" src="schemasview.js"></script>
 	<script type="text/javascript" src="scalardata.js"></script>
 	<script type="text/javascript" src="schema.js"></script>
 	<script type="text/javascript" src="view.js"></script>
@@ -37,9 +41,7 @@
 		  <div id="sidebar-content">
 		    <h1>ScalarData</h1>
 		    <p>Version 1</p>
-		    <ul id="schemas" class="menu">
-			  <li class="divider" data-content="SCHEMAS"></li>
-		    </ul>
+			<div id="schemas"></div>
 		  </div>
 		</div>
 		<div id="workspace" class="col-9">

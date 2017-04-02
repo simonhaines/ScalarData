@@ -43,7 +43,7 @@ let schemaRegistry = new Array();
 class Schema {
 
   constructor(model) {
-    if (!(model instanceof Array)) throw new Error("Bad model");
+    if (!(model instanceof Array)) throw new Error('Bad model');
 
     // Map string tags to types
     var typeMap = schemaRegistry.reduce(function(acc, val) {
@@ -60,8 +60,8 @@ class Schema {
       return new typeMap[item[0]](...item.slice(1));
 	});
 
-	// Event dispatch
-	this.events = new Map();
+	// Enable events
+	Event.enable(this);
   }
 
   static create() {
@@ -80,18 +80,6 @@ class Schema {
 	  return [item[Symbol.toStringTag]].concat(item.toJSON());
 	}));
 	return json;
-  }
-
-  on(event, callback) {
-	this.events.set(event, callback);
-  }
-
-  dispatch(event, ...args) {
-	for (var entry of this.events.entries()) {
-	  if (entry[0].split('.')[0] === event) {
-		entry[1](...args);
-	  }
-	}
   }
 
   add(type) {

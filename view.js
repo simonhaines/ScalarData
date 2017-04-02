@@ -113,9 +113,12 @@ let viewRegistry = new Map();
 class SchemaView {
   constructor(schema) {
 	this.schema = schema;
+	this.id = this.schema.id;
 	this.name = this.schema.name;
 	this.tags = this.tagsToString(this.schema.tags);
-	this.events = new Map();
+
+	// This class is event-enabled
+	Event.enable(this);
 
 	// Load all editor widgets from the registry
 	this.widgets = schema.map((s) => {
@@ -246,7 +249,7 @@ class SchemaView {
   renderWidgets() {
 	let widgets = d3.select(this.el.querySelector('#widgets'))
 	  .selectAll('.widget')
-		.data(this.widgets, (d) => d.model.id);
+	  .data(this.widgets, (d) => d.model.id);
 	widgets.enter()
 	  .append((d, i) => {
 		let el = document.createElement('div');
@@ -290,18 +293,6 @@ class SchemaView {
 	this.name = this.schema.name;
 	this.widgets.forEach((w) => w.rollback());
 	this.renderViewer();
-  }
-
-  on(event, callback) {
-	this.events.set(event, callback);
-  }
-
-  dispatch(event, ...args) {
-	for (var entry of this.events.entries()) {
-	  if (entry[0].split('.')[0] === event) {
-		entry[1](...args);
-	  }
-	}
   }
 
   close() {
