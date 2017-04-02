@@ -1,8 +1,3 @@
-var idCounter = 0;
-function newId() {
-  return `s${idCounter++}`;
-}
-
 class Scalar {
   constructor(id, name, optional) {
 	this.id = id;
@@ -18,7 +13,7 @@ class Scalar {
   }
 
   static create() {
-	return new Scalar(newId(), 'Number', true);
+	return new Scalar(Id.next(), 'Number', true);
   }
 }
 
@@ -39,7 +34,7 @@ class Location {
   }
 
   static create() {
-	return new Location(newId(), 'Location', 0);
+	return new Location(Id.next(), 'Location', 0);
   }
 }
 Location.prototype[Symbol.toStringTag] = "Schema/Location";
@@ -56,16 +51,21 @@ class Schema {
       return acc;
     }, new Map());
 
-	// ['schema name', ['tag', ...], [[schemaType, ...], ...]]]
-	this.name = model[0];
-	this.tags = model[1];
-	this.items = model[2].map(function(item) {
+	// [id, 'name', ['tag', ...], [[schemaType, ...], ...]]]
+	this.id = model[0]
+	this.name = model[1];
+	this.tags = model[2];
+	this.items = model[3].map(function(item) {
       if (!typeMap[item[0]]) throw new Error("Unknown type: " + item[0]);
       return new typeMap[item[0]](...item.slice(1));
 	});
 
 	// Event dispatch
 	this.events = new Map();
+  }
+
+  static create() {
+	return new Schema([Id.next(), 'New schema', [], []]);
   }
 
   map(func) {

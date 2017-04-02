@@ -5,45 +5,46 @@
 	  body {
 		background: #f2f2f2;
 	  }
+	  #sidebar-content {
+	    margin: 10px;
+	  }
 	  .card {
 	    margin: 10px;
 	  }
-	  .width-medium {
+	  .w500 {
 	    max-width: 500px;
 	  }
 	  .dropzone {
-	  border: medium dashed gray;
-	  font-size: 24px;
-	  text-align: center;
-	  line-height: 120px;
-	  vertical-align: middle;
+	    border: medium dashed gray;
+	    font-size: 24px;
+	    text-align: center;
+	    line-height: 120px;
+	    vertical-align: middle;
 	  }
 	</style>
+	<script type="text/javascript">
+	  window.data = [20, [[1, 'First schema', ['genesis'], [['Schema/Number', 10, 'First number', true],['Schema/Location', 11, 'Place', 0]]]]];
+	</script>
 	<script type="text/javascript" src="d3.js"></script>
+	<script type="text/javascript" src="scalardata.js"></script>
 	<script type="text/javascript" src="schema.js"></script>
 	<script type="text/javascript" src="view.js"></script>
   </head>
   <body>
 	<div class="container">
 	  <div class="columns">
-		<div id="sidebar" class="col-2">
-		  <h1>ScalarData</h1>
-		  <p>Version 1</p>
+		<div id="sidebar" class="col-3">
+		  <div id="sidebar-content">
+		    <h1>ScalarData</h1>
+		    <p>Version 1</p>
+		    <ul id="schemas" class="menu">
+			  <li class="divider" data-content="SCHEMAS"></li>
+		    </ul>
+		  </div>
 		</div>
-		<div id="workspace" class="col-10">
+		<div id="workspace" class="col-9">
 	  </div>
 	</div>
-
-	<script type="text/javascript">
-	  // A schema of a single integer
-	  var s = new Schema(['First schema', ['genesis'], [['Schema/Number', 's10', 'First number', true],['Schema/Location', 's11', 'Place', 0]]]);
-
-	  // Render the schema
-	  var sv = new SchemaView(s);
-	  sv.render(document.getElementById('workspace'));
-	  
-	</script>
-
   </body>
 </html>
 

@@ -113,8 +113,9 @@ let viewRegistry = new Map();
 class SchemaView {
   constructor(schema) {
 	this.schema = schema;
-	  this.name = this.schema.name;
-	  this.tags = this.tagsToString(this.schema.tags);
+	this.name = this.schema.name;
+	this.tags = this.tagsToString(this.schema.tags);
+	this.events = new Map();
 
 	// Load all editor widgets from the registry
 	this.widgets = schema.map((s) => {
@@ -131,11 +132,7 @@ class SchemaView {
   }
 
   render(el) {
-	// TODO move this to a 'workspace' view
-	var root = document.createElement('div');
-	el.appendChild(root);
-
-	this.el = root;
+	this.el = el;
 	this.el.className = 'card shadow-0';
 	this.renderViewer();
   }
@@ -197,8 +194,9 @@ class SchemaView {
 		</div>
 	  </div>
 	  <div class="card-body">
-        <div id="widgets" class="width-medium"></div>
-        <form class="form-horizontal col-12 width-medium">
+        <div id="widgets" class="w500"></div>
+        <div class="divider"></div>
+        <form class="form-horizontal col-12 w500">
           <div class="form-group"> 
             <label class="form-label col-3">New attribute</label>
             <select id="attribute-type" class="form-select col-6"></select>
@@ -256,8 +254,6 @@ class SchemaView {
 		d.render(el);
 		return el;
 	  });
-//	  .merge(widgets)
-//	  .each(function(d) { d.render(this); });
 	widgets.exit()
 	  .remove();
   }
@@ -287,6 +283,7 @@ class SchemaView {
 	this.schema.tags = this.stringToTags(this.tags);
 	this.widgets.forEach((w) => w.commit());
 	this.renderViewer();
+	this.dispatch('change', this);
   }
 
   rollback() {
@@ -295,8 +292,20 @@ class SchemaView {
 	this.renderViewer();
   }
 
+  on(event, callback) {
+	this.events.set(event, callback);
+  }
+
+  dispatch(event, ...args) {
+	for (var entry of this.events.entries()) {
+	  if (entry[0].split('.')[0] === event) {
+		entry[1](...args);
+	  }
+	}
+  }
+
   close() {
-	alert('Close!');
+	this.dispatch('close', this);
   }
   
   stringToTags(str) {
