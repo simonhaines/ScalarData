@@ -16,15 +16,6 @@ class Id {
 }
 
 sd = {
-  add: function(view) {
-	var panel = document.createElement('div');
-	view.render(panel);
-	this.workspace.appendChild(panel);
-	view.on('close.sd', () => {
-	  this.workspace.removeChild(panel);
-	});
-  },
-
   boot: function() {
 	// Find data and load it
 	if (window.data instanceof Array) {
