@@ -1,5 +1,5 @@
 
-let _id = 0;
+let _id = 1;
 class Id {
 
   static next() {
@@ -22,7 +22,7 @@ sd = {
 	  Id.set(window.data[0]);
 	  this.schemas = new Schemas(window.data[1]);
 	} else {
-	  this.schemas = new Schemas([]);
+	  this.schemas = new Schemas([Id.next(),[]]);
 	}
 
 	// Reference elements
