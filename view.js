@@ -47,6 +47,10 @@ class ScalarEditor {
 	this.name = this.model.name;
 	this.optional = this.model.optional;
   }
+  renderValue(el, data) {
+	el.style.width = 80;
+	el.innerText = data.toString();
+  }
   static get description() {
 	return "A number";
   }
@@ -103,6 +107,10 @@ class LocationEditor {
   rollback() {
 	this.name = this.model.name;
 	this.order = this.model.order;
+  }
+  renderValue(el, value) {
+	el.style.width = 80;
+	el.innerText = `(${value[0]},${value[1]})`;
   }
   static get description() {
 	return "A geographic location";

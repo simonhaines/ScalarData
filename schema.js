@@ -1,3 +1,4 @@
+
 class Scalar {
   constructor(id, name, optional) {
 	this.id = id;
@@ -6,6 +7,13 @@ class Scalar {
   }
 
   parse(json) {
+	if (json[0] === null)
+	  return this.optional ? 0 : Schema.skip;
+	var num = parseFloat(json[0]);
+	if (num === NaN)
+	  return Schema.skip;
+	else
+	  return [num, json.slice(1)];
   }
 
   toJSON() {
@@ -27,6 +35,13 @@ class Location {
   }
 
   parse(json) {
+	var latitude = parseFloat(this.order === 0 ? json[1] : json[0]);
+	var longitude = parseFloat(this.order === 0 ? json[0] : json[1]);
+	if (latitude === NaN || latitude < -90 || latitude > 90)
+	  return Schema.skip;
+	if (longitude === NaN || longitude < 180 || longitude > 180)
+	  return Schema.skip;
+	return [[longitude, latitude], json.slice(1)];
   }
 
   toJSON() {
@@ -106,3 +121,4 @@ class Schema {
 
 Schema.register(Scalar);
 Schema.register(Location);
+Schema.skip = Symbol('skip');
