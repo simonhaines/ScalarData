@@ -84,7 +84,9 @@ class DataSourceView {
   }
 
   renderRows(idx) {
-	var range = Array.from(new Array(this.rowCount), (x, i) => i + idx);
+	var count = (idx + rowCount > this.data.length)
+		? this.data.length - idx : rowCount;
+	var range = Array.from(new Array(count), (x, i) => i + idx);
 	var panel = d3.select(this.panel);
 	  .selectAll('.portal-row')
 	  .data(range);
@@ -93,13 +95,13 @@ class DataSourceView {
 	  .append((d, i) => {
 		var row = document.createElement('div');
 		row.className = 'portal-row';
-		this.data.slice(idx, idx + rowCount).forEach((dr) => {
-		  dr.forEach((di, didx) => {
+		for (var di = 0; di < rowCount; ++di) {
+		  this.data[idx + di].forEach((dv) => {
 			var s = document.createElement('span');
-			this.widgets[didx].renderValue(s, di);
+			this.widgets[di].renderValue(s, dv);
 			row.appendChild(s);
 		  });
-		});
+		}
 		return row;
 	  });
 	panel
