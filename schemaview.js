@@ -124,17 +124,15 @@ class SchemaView {
 	this.id = this.schema.id;
 	this.name = this.schema.name;
 	this.tags = this.tagsToString(this.schema.tags);
+	this.key = 1;
 
 	// This class is event-enabled
 	Event.enable(this);
 
-	// Load all editor widgets from the registry
-	this.widgets = schema.map((s) => {
-	  if (!viewRegistry.has(s[Symbol.toStringTag])) {
-		throw new Error("Unregistered editor: " + s.toString());
-	  } else {
-		return new (viewRegistry.get(s[Symbol.toStringTag]))(s, this);
-	  }
+	// Add all existing attributes
+	this.widgets = new Array();
+	this.schema.forEach((s,i) => {
+	  this.onAdd(i, s);
 	});
 
 	// Listen out for schema changes
@@ -175,7 +173,7 @@ class SchemaView {
 	dz.addEventListener('dragover', (e) => {
 	  e.stopPropagation();
 	  e.preventDefault();
-	  e.dataTransfer.dropEffect= 'copy';
+	  e.dataTransfer.dropEffect = 'copy';
 	});
 	dz.addEventListener('drop', (e) => {
 	  e.stopPropagation();
@@ -257,7 +255,7 @@ class SchemaView {
   renderWidgets() {
 	let widgets = d3.select(this.el.querySelector('#widgets'))
 	  .selectAll('.widget')
-	  .data(this.widgets, (d) => d.model.id);
+	  .data(this.widgets, (d) => d.key);
 	widgets.enter()
 	  .append((d, i) => {
 		let el = document.createElement('div');
@@ -270,8 +268,12 @@ class SchemaView {
   }
 
   onAdd(item, idx) {
-	var w = viewRegistry.get(item[Symbol.toStringTag]);
-	this.widgets.splice(idx, 0, new w(item, this));
+	if (!viewRegistry.has(item[Symbol.toStringTag]))
+	  throw new Error(`Unregistered editor: ${item[Symbol.toStringTag]}`);
+	var cons = viewRegistry.get(item[Symbol.toStringTag]);
+	var widget = new cons(item, this);
+	widget.key = this.key++;
+	this.widgets.splice(idx, 0, widget);
 	this.renderWidgets();
   }
 
