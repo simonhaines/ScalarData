@@ -3,20 +3,21 @@ class DataSourceView {
 	this.datasource = datasource;
 	this.id = datasource.id;
 	this.name = datasource.name;
+	this.data = datasource.data;
 
 	// Load all schema widgets from the view registry
-	this.widgets = datasource.schema.map((s) => {
-	  if (!viewRegistry.has(s[Symbol.toStringTag])) {
-		throw new Error("Unregistered editor: " + s.toString());
+	this.widgets = datasource.types.map((t) => {
+	  if (!viewRegistry.has(t[Symbol.toStringTag])) {
+		throw new Error("Unregistered editor: " + t.toString());
 	  } else {
-		return new (viewRegistry.get(s[Symbol.toStringTag]))(s, this);
+		return new (viewRegistry.get(t[Symbol.toStringTag]))(t, this);
 	  }
 	});
 
 	this.width = 500;
-	this.height = 300;
+	this.rowCount = Math.min(10, this.data.length);
 	this.rowHeight = 20;
-	this.rowCount = this.height / this.rowHeight;
+	this.height = this.rowCount * this.rowHeight;
   }
 
   render(el) {
@@ -45,7 +46,7 @@ class DataSourceView {
 	  .addEventListener('click', (e) => this.close());
 
 	// Heading
-	var header = this.querySelector('.portal-hdr');
+	var header = this.el.querySelector('.portal-hdr');
 	this.widgets.forEach((w) => {
 	  var sp = document.createElement('span');
 	  sp.style.width = 80;
@@ -55,7 +56,7 @@ class DataSourceView {
 	});
 	
 	// Data panel
-	this.panel = this.el.querySelector('.portal-data');
+	this.panel = this.el.querySelector('.portal');
 	this.panel.style.width = this.width;
 	this.panel.style.height = this.height;
 
@@ -84,25 +85,24 @@ class DataSourceView {
   }
 
   renderRows(idx) {
-	var count = (idx + rowCount > this.data.length)
-		? this.data.length - idx : rowCount;
+	var count = (idx + this.rowCount > this.data.length)
+		? this.data.length - idx : this.rowCount;
 	var range = Array.from(new Array(count), (x, i) => i + idx);
-	var panel = d3.select(this.panel);
+	var panel = d3.select(this.panel)
 	  .selectAll('.portal-row')
 	  .data(range);
 	panel
 	  .enter()
 	  .append((d, i) => {
-		var row = document.createElement('div');
-		row.className = 'portal-row';
-		for (var di = 0; di < rowCount; ++di) {
-		  this.data[idx + di].forEach((dv) => {
-			var s = document.createElement('span');
-			this.widgets[di].renderValue(s, dv);
-			row.appendChild(s);
-		  });
-		}
-		return row;
+		var portalrow = document.createElement('div');
+		portalrow.className = 'portal-row';
+		portalrow.style.top = i * this.rowHeight;
+		this.widgets.forEach((w, i) => {
+		  var s = document.createElement('span');
+		  w.renderValue(s, this.data[d][i]);
+		  portalrow.appendChild(s);
+		});
+		return portalrow;
 	  });
 	panel
 	  .exit()

@@ -47,7 +47,7 @@ class SchemasView {
   show(id) {
 	if (!this.views.has(id)) {
 	  var schema = this.schemas.get(id);
-	  var view = new SchemaView(schema);
+	  var view = new SchemaView(schema, this.workspace);
 	  view.on('change', (v) => {
 		this.el.querySelector(`[data-id="${id}"]`).innerText = v.name;
 	  });

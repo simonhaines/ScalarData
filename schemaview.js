@@ -119,8 +119,9 @@ class LocationEditor {
 
 let viewRegistry = new Map();
 class SchemaView {
-  constructor(schema) {
+  constructor(schema, workspace) {
 	this.schema = schema;
+	this.workspace = workspace;
 	this.id = this.schema.id;
 	this.name = this.schema.name;
 	this.tags = this.tagsToString(this.schema.tags);
@@ -178,7 +179,21 @@ class SchemaView {
 	dz.addEventListener('drop', (e) => {
 	  e.stopPropagation();
 	  e.preventDefault();
-	  alert('dropped!');
+	  let files = e.dataTransfer.files;
+	  this.schema.parseCSV(files[0])
+		.then((data) => {
+		  var model = new Array();
+		  model.push(Id.next());
+		  model.push(files[0].name);
+		  model.push(this.stringToTags(this.tags));
+		  model.push(Types.toJSON(this.schema.types));
+		  model.push(data);
+		  var datasource = new DataSource(model);
+		  let view = new DataSourceView(datasource);
+		  this.workspace.add(view);
+		}, (error) => {
+		  throw new Error(error);
+		});
 	});
 
 	d3.select(this.el)
